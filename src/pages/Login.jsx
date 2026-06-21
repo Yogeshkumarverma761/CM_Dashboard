@@ -87,7 +87,7 @@ export default function Login() {
 
   const redirectUserByRole = (userRole) => {
     if (userRole === 'citizen') {
-      navigate('/track');
+      navigate('/');
     } else if (userRole === 'officer') {
       navigate('/complaints');
     } else {
@@ -182,7 +182,7 @@ export default function Login() {
                 {isRegisterMode ? 'Create State Account' : 'Welcome Back'}
               </Typography>
               <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 3 }}>
-                {isMock ? 'Demo Sandbox Mode Active. Credentials saved locally.' : 'Live Supabase DB connection active.'}
+                {isMock ? 'Demo Sandbox Mode Active. Credentials saved locally.' : 'Live NeonDB API connection active.'}
               </Typography>
 
               <Box component="form" onSubmit={handleAuthAction}>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Box, CssBaseline, Toolbar, AppBar, Button, Typography, Container } from '@mui/material';
+import { Box, CssBaseline, Toolbar } from '@mui/material';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { CustomThemeProvider } from './context/ThemeContext';
 
 // Import Pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import CMDashboard from './pages/CMDashboard';
 import Analytics from './pages/Analytics';
@@ -31,7 +33,7 @@ const RouteGuard = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // If not authorized, redirect to their default home
     if (user.role === 'officer') return <Navigate to="/complaints" replace />;
-    if (user.role === 'citizen') return <Navigate to="/track" replace />;
+    if (user.role === 'citizen') return <Navigate to="/" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -42,7 +44,6 @@ const RouteGuard = ({ children, allowedRoles }) => {
 function AppLayout() {
   const { user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -50,13 +51,10 @@ function AppLayout() {
   };
 
   const isLoginPage = location.pathname === '/login';
-  
-  // Public Citizen tracking view without dashboard wrapper
-  const isPublicTrackPage = location.pathname === '/track' && !user;
 
   if (isLoginPage) {
     return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      <Box sx={{ minHeight: '100vh' }}>
         <CssBaseline />
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -65,32 +63,8 @@ function AppLayout() {
     );
   }
 
-  if (isPublicTrackPage) {
-    return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-        <CssBaseline />
-        {/* Simple Guest Navbar */}
-        <AppBar position="static" sx={{ backgroundColor: '#0A2540', boxShadow: 1 }}>
-          <Toolbar>
-            <Typography variant="h6" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 700, flexGrow: 1 }}>
-              DELHI CM GRIEVANCES
-            </Typography>
-            <Button color="inherit" onClick={() => navigate('/login')} sx={{ textTransform: 'none', fontWeight: 600 }}>
-              Official Login
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Container maxWidth="md" sx={{ mt: 2 }}>
-          <Routes>
-            <Route path="/track" element={<TrackComplaint />} />
-          </Routes>
-        </Container>
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <CssBaseline />
       
       {/* Top Navbar */}
@@ -104,14 +78,23 @@ function AppLayout() {
         component="main" 
         sx={{ 
           flexGrow: 1, 
-          p: 3, 
+          p: { xs: 2, md: 3 }, 
           width: { md: `calc(100% - 240px)` },
-          transition: 'all 0.2s ease-in-out'
+          transition: 'all 0.2s ease-in-out',
+          backgroundColor: 'background.default',
+          color: 'text.primary',
+          minHeight: '100vh'
         }}
       >
         <Toolbar /> {/* Spacer below navbar */}
         
         <Routes>
+          {/* Public Citizen Landing Page at / */}
+          <Route 
+            path="/" 
+            element={<Landing />} 
+          />
+          
           <Route 
             path="/dashboard" 
             element={
@@ -162,11 +145,7 @@ function AppLayout() {
           />
           <Route 
             path="/track" 
-            element={
-              <RouteGuard allowedRoles={['citizen', 'cm', 'admin']}>
-                <TrackComplaint />
-              </RouteGuard>
-            } 
+            element={<TrackComplaint />} 
           />
           
           {/* Default Route redirects */}
@@ -179,10 +158,10 @@ function AppLayout() {
                 ) : user.role === 'officer' ? (
                   <Navigate to="/complaints" replace />
                 ) : (
-                  <Navigate to="/track" replace />
+                  <Navigate to="/" replace />
                 )
               ) : (
-                <Navigate to="/track" replace />
+                <Navigate to="/" replace />
               )
             } 
           />
@@ -197,7 +176,9 @@ export default function App() {
     <Router>
       <NotificationProvider>
         <AuthProvider>
-          <AppLayout />
+          <CustomThemeProvider>
+            <AppLayout />
+          </CustomThemeProvider>
         </AuthProvider>
       </NotificationProvider>
     </Router>
